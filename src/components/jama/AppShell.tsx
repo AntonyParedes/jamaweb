@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { House, Search, Heart, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
-import logo from "@/assets/jama-logo.webp.asset.json";
+import logo from "@/assets/jama-logo-trim.webp";
 
 const NAV = [
   { to: "/", label: "Inicio", icon: House },
@@ -12,7 +12,7 @@ const NAV = [
 
 export function Logo({ className = "h-10" }: { className?: string }) {
   return (
-    <img src={logo.url} alt="JAMA" className={`${className} w-auto object-contain scale-150`} />
+    <img src={logo} alt="JAMA" className={`${className} w-auto object-contain`} />
   );
 }
 
