@@ -11,7 +11,7 @@ para Node.js 24. Usar Node 24 y una versión de Bun compatible con `bun.lock`.
 
 ## Antes de desplegar
 
-1. Aplicar las tres migraciones y comprobar bucket/políticas siguiendo
+1. Aplicar las cuatro migraciones y comprobar bucket/políticas siguiendo
    [SUPABASE.md](./SUPABASE.md). La nueva funcionalidad no puede publicar ni mostrar
    ofertas reales hasta aplicar ese SQL. Las cuentas/perfiles ya existentes se reutilizan.
 2. Configurar las dos variables de `.env.example` en Vercel, para el entorno de

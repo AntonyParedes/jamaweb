@@ -22,7 +22,7 @@ export function Administracion() {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
-  const [filter, setFilter] = useState("pending");
+  const [filter, setFilter] = useState("all");
   const busy = useRef(false);
   const query = useQuery({
     queryKey: ["jama-business-reviews", session?.user.id],
@@ -97,21 +97,21 @@ export function Administracion() {
         ) : (
           <>
             <p className="text-sm text-muted-foreground">
-              Revisa la categoría, la ubicación y el WhatsApp comercial antes de aprobar. Solo
-              admite negocios compatibles con ofertas de cierre. Retirar la aprobación oculta sus
-              ofertas de inmediato.
+              Los negocios publican directamente, sin revisión previa. Puedes suspender la
+              publicación de un negocio que incumpla las condiciones o volver a habilitarla.
+              Suspenderlo oculta sus ofertas de inmediato.
             </p>
             <label className="block space-y-1 text-sm font-bold">
-              Estado de las solicitudes
+              Estado de los negocios
               <select
-                aria-label="Estado de las solicitudes"
+                aria-label="Estado de los negocios"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 className={sellerField}
               >
-                <option value="pending">En revisión</option>
-                <option value="approved">Aprobados</option>
-                <option value="rejected">No aprobados</option>
+                <option value="pending">Suspendidos</option>
+                <option value="approved">Habilitados</option>
+                <option value="rejected">Bloqueados</option>
                 <option value="all">Todos</option>
               </select>
             </label>
@@ -120,7 +120,7 @@ export function Administracion() {
               onClick={() => void query.refetch()}
               className="min-h-11 font-bold underline"
             >
-              Actualizar solicitudes
+              Actualizar negocios
             </button>
             {message && (
               <p role="status" className="rounded-xl bg-muted p-3 text-sm">
@@ -128,7 +128,7 @@ export function Administracion() {
               </p>
             )}
             {!(query.data ?? []).some((b) => filter === "all" || b.status === filter) && (
-              <p className="rounded-2xl bg-muted p-5">No hay solicitudes en este estado.</p>
+              <p className="rounded-2xl bg-muted p-5">No hay negocios en este estado.</p>
             )}
             <ul className="space-y-4">
               {(query.data ?? [])
@@ -162,21 +162,21 @@ export function Administracion() {
                         onClick={() => void review(b.id, "approved", b.review_note)}
                         className="press min-h-12 rounded-full bg-lime px-5 font-black disabled:opacity-50"
                       >
-                        Aprobar
+                        Habilitar publicación
                       </button>
                       <button
                         disabled={pending || b.status === "rejected"}
                         onClick={() => void review(b.id, "rejected", b.review_note)}
                         className="min-h-12 rounded-full border px-5 font-bold disabled:opacity-50"
                       >
-                        No aprobar
+                        Bloquear
                       </button>
                       <button
                         disabled={pending || b.status === "pending"}
                         onClick={() => void review(b.id, "pending", b.review_note)}
                         className="min-h-12 rounded-full border px-5 font-bold disabled:opacity-50"
                       >
-                        Volver a revisión
+                        Suspender
                       </button>
                     </div>
                   </li>

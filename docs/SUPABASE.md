@@ -17,7 +17,7 @@ Repositorio: `AntonyParedes/jamaweb`. Proyecto Supabase actual:
    productos ni modifica perfiles. Si hay políticas ajenas de productos, aborta
    para que se revisen antes de conceder permisos. Ante un error, la transacción
    revierte todos sus cambios; revisar el error antes de volver a ejecutar.
-4. Las tres migraciones ya están aplicadas al proyecto actual. En proyectos
+4. Las migraciones 001, 002 y 003 ya están aplicadas al proyecto actual. En proyectos
    nuevos, ejecutar `supabase/migrations/202610100003_jama_categories_approval.sql`
    una vez después de las anteriores. Reutiliza `businesses` y `products`, añade la
    taxonomía `jama_categories` y el registro privado `jama_admins`, y refuerza las
@@ -25,12 +25,17 @@ Repositorio: `AntonyParedes/jamaweb`. Proyecto Supabase actual:
    Todos los negocios existentes pasan a `pending`: no hubo un proceso previo de
    aprobación que permita marcarlos como revisados. Las ofertas se conservan,
    pero quedan ocultas hasta la aprobación del negocio.
-5. Verificar en Table Editor las nuevas columnas de `products` y `businesses`;
+5. Para la publicación directa solicitada ahora, ejecutar una sola vez
+   `supabase/migrations/202610110004_jama_direct_publication.sql` después de 003.
+   Habilita automáticamente los negocios nuevos y los pendientes de categorías
+   válidas. Conserva los bloqueados, las ofertas, fotos y borradores. No modifica
+   `published`, stock ni horarios: los dueños deben pulsar **Publicar** en sus borradores.
+6. Verificar en Table Editor las nuevas columnas de `products` y `businesses`;
    en Storage, el bucket `offer-images`, público, límite 5 MB, MIME JPEG/PNG/WebP.
-6. Los cinco registros de `supabase/seed.sql` son ejemplos antiguos sin propietario
+7. Los cinco registros de `supabase/seed.sql` son ejemplos antiguos sin propietario
    ni foto subida al bucket. Se conservan pero **no se muestran como ofertas
    vendibles**. El seed es opcional en proyectos nuevos. Publicar productos reales
-   desde `/vender`, después de registrar y aprobar el negocio; no asignar precios ni stock
+   desde `/vender`, después de registrar el negocio; no asignar precios ni stock
    ficticios a productos de ejemplo.
 
 La clave publishable no permite ejecutar migraciones. Usar SQL Editor con la cuenta
@@ -52,10 +57,12 @@ administradora o un despliegue de migraciones administrativo seguro. No entregar
    Solo el acceso administrativo a la base puede asignar o retirar estos roles;
    no se concede lectura/escritura de `jama_admins` a clientes ni usuarios normales.
 
-3. Iniciar sesión con esa cuenta, abrir **Mi cuenta → Revisar negocios** o
-   `/administracion`. Revisar categoría, zona y WhatsApp; aprobar, no aprobar con
-   una observación, o devolver a revisión. `jama_review_business()` verifica el rol
-   nuevamente en PostgreSQL y registra la fecha y el revisor. La aprobación del
+3. La aprobación previa se elimina con la migración 004. La administración queda
+   como moderación posterior: suspender/bloquear negocios o habilitarlos nuevamente.
+   Iniciar sesión con esa cuenta, abrir **Mi cuenta → Revisar negocios** o
+   `/administracion`. Revisar categoría, zona y WhatsApp; usar **Habilitar publicación**, **Bloquear**
+   o **Suspender**, con una observación cuando corresponda. `jama_review_business()` verifica el rol
+   nuevamente en PostgreSQL y registra la fecha y el revisor. Habilitar el
    negocio no publica automáticamente los borradores: el dueño debe reactivarlos.
 4. Para una categoría nueva, agregar una fila en `jama_categories`, sin modificar
    TypeScript ni reconstruir la aplicación. Por ejemplo, como administrador:
@@ -124,15 +131,16 @@ Permitir el host del proyecto Supabase en la red del entorno de desarrollo.
   comercial obligatorio. Perú usa +51 como valor inicial; se permiten otros códigos.
   La validación comprueba formato, no que el número realmente tenga WhatsApp activo.
 - El registro exige categoría y crea una solicitud `pending`. Los dueños pueden
-  guardar borradores; solo un negocio `approved` puede publicar o reactivar.
-  Modificar nombre, zona, WhatsApp o categoría vuelve a `pending`, limpia la revisión
-  previa y oculta las ofertas. Se puede consultar su estado con **Actualizar estado**.
+  publicar directamente tras la migración 004, sin revisión previa. El estado interno
+  `approved` significa publicación habilitada; `pending`/`rejected` quedan disponibles
+  únicamente para suspensión administrativa. Editar datos no suspende un negocio
+  habilitado ni desbloquea uno suspendido. **Actualizar estado** refresca el estado.
 - Un negocio por usuario. Formularios de oferta: nombre, descripción, categoría,
   foto, precio normal/descontado, cantidad e inicio/fin (horario America/Lima).
   Los precios se guardan en céntimos y las fechas en `timestamptz`.
 - Se pueden crear, editar, pausar, reactivar y eliminar ofertas. Eliminar exige una
   confirmación visible. Ofertas futuras quedan programadas; pausadas, vencidas,
-  agotadas, de categorías inactivas o de negocios no aprobados no aparecen en el
+  agotadas, de categorías inactivas o de negocios suspendidos no aparecen en el
   catálogo ni permiten contacto o checkout. Los dueños pueden ver las suyas.
 - “Quiero este descuento” abre `/oferta/<uuid>`. Si falta sesión, se solicita acceso.
   Por decisión del usuario, iniciar sesión o registrarse con sesión activa lleva
@@ -206,7 +214,7 @@ Intercepta Auth, Storage, funciones del servidor y WhatsApp. Recorre los formula
 catálogo, pausa/reactivación/eliminación y retorno desde login a 320, 375, 768 y 1280 px;
 no crea cuentas reales, publica productos remotos ni envía mensajes.
 
-Resultados locales de esta implementación: 51 pruebas de aplicación, 133
+Resultados locales de esta implementación: 51 pruebas de aplicación, 148
 comprobaciones de PostgreSQL y 120 comprobaciones de Chromium correctas. Chromium
 comprueba formularios dinámicos, borradores, aprobación, catálogo, orden y
 actualización de precios en móvil/escritorio con respuestas simuladas; TypeScript
@@ -222,13 +230,13 @@ del administrador deniega acceso anónimo (401/42501). La asignación de la cuen
 administradora debe comprobarse iniciando sesión con ella en `/administracion`. Las pruebas reales de publicación/Storage/RLS
 con cuentas de vendedores siguen pendientes; los resultados locales no las sustituyen.
 
-Con las tres migraciones aplicadas y un administrador asignado, verificar:
+Con las cuatro migraciones aplicadas, verificar:
 
 1. Registrarse sin confirmación, entrar, recargar y cerrar sesión.
 2. Negocio sin WhatsApp/WhatsApp inválido: publicación bloqueada.
-3. Negocio A: guardar un borrador con foto real; confirmar que siga oculto y que no
-   permita publicar sin aprobación. Revisar con el administrador, aprobar y publicar.
+3. Negocio A: registrarlo y publicar una oferta con foto real sin aprobación.
    Confirmar como visitante la vigencia, el precio y el orden por descuento.
+   Guardar también un borrador y comprobar que solo aparezca al pulsar **Publicar**.
 4. Negocio B: intentar consultar/modificar ofertas privadas y archivos de A mediante
    la API autenticada; las políticas deben negar la operación.
 5. Comprobar editar, pausar, programar, agotar, vencer, reactivar y eliminar.
@@ -246,3 +254,7 @@ responsable antes de abrir esta funcionalidad al público.
 La revisión de seguridad y el plan de RLS se documentan en `docs/SECURITY.md`.
 Tras generar el build, ejecutar `node scripts/audit-security.mjs`. El inventario
 remoto de permisos está en `supabase/security_audit.sql` y no modifica datos.
+
+La migración 004 está probada localmente; su aplicación al proyecto alojado debe
+confirmarse en SQL Editor. No basta con desplegar el código para cambiar el valor
+por defecto y el trigger de la base de datos.

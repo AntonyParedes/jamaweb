@@ -314,7 +314,7 @@ export function OfferForm({
           />
           {canPublish
             ? "Publicar según la vigencia indicada"
-            : "Borrador: requiere aprobación del negocio para publicar"}
+            : "Borrador: publicación del negocio suspendida"}
         </label>
         <div className="flex flex-wrap gap-3">
           <button

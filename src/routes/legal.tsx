@@ -24,9 +24,9 @@ export const Route = createFileRoute("/legal")({
           <p>
             Los vendedores deben publicar fotos y datos de sus propios productos, precios reales y
             una vigencia válida. Cada negocio mantiene actualizado su stock y su WhatsApp comercial.
-            Los negocios requieren aprobación administrativa antes de publicar; cambiar sus datos
-            los envía nuevamente a revisión. Las ofertas pausadas, vencidas, agotadas o de negocios
-            no aprobados dejan de mostrarse como disponibles.
+            Los negocios pueden publicar directamente, sin aprobación previa. JAMA puede suspender
+            negocios que incumplan las condiciones. Las ofertas pausadas, vencidas, agotadas o de
+            negocios suspendidos dejan de mostrarse como disponibles.
           </p>
         </section>
         <section id="privacidad" className="scroll-mt-20 space-y-2">

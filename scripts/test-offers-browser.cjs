@@ -175,7 +175,7 @@ const picture = fs.readFileSync(
         else if (name === "saveBusiness") {
           business = {
             id: "00000000-0000-4000-8000-000000000011",
-            status: "pending",
+            status: "approved",
             review_note: "",
             ...data.business,
           };
@@ -253,11 +253,12 @@ const picture = fs.readFileSync(
       await page.getByRole("button", { name: "Guardar negocio" }).click();
       await page.getByRole("heading", { name: "Mis ofertas" }).waitFor();
       checks++;
-      await page.getByText("Solicitud en revisión", { exact: true }).waitFor();
-      await page.getByRole("button", { name: "Preparar una oferta", exact: true }).click();
+      await page.getByText("Publicación habilitada", { exact: true }).waitFor();
+      await page.getByRole("button", { name: "Publicar una oferta", exact: true }).click();
       await page.getByLabel("Nombre del producto o combo", { exact: true }).waitFor();
       await page.getByPlaceholder("Describe los productos incluidos y tamaños.").waitFor();
-      assert.equal(await page.getByRole("checkbox").isDisabled(), true);
+      assert.equal(await page.getByRole("checkbox").isDisabled(), false);
+      assert.equal(await page.getByRole("checkbox").isChecked(), true);
       checks++;
       await page.getByLabel("Categoría", { exact: true }).selectOption("tortas");
       await page.getByLabel("Nombre del producto", { exact: true }).fill("Torta de prueba");
@@ -287,24 +288,30 @@ const picture = fs.readFileSync(
       await page.getByRole("heading", { name: "Torta de prueba", exact: true }).waitFor();
       assert.equal(calls.saveOffer, 1);
       checks++;
-      assert.equal(offers[0].published, false);
+      assert.equal(offers[0].published, true);
       assert.equal(
-        await page.getByRole("button", { name: "Reactivar", exact: true }).isDisabled(),
-        true,
+        await page.getByRole("button", { name: "Pausar", exact: true }).isDisabled(),
+        false,
       );
       checks++;
       await page.goto(base + "/explorar");
-      await page.getByText("Sin resultados").waitFor();
+      await page.getByRole("button", { name: "Ver Torta de prueba", exact: true }).waitFor();
       checks++;
       await page.goto(base + "/administracion");
       await page.getByRole("alert").filter({ hasText: "No tienes permisos" }).waitFor();
-      assert.equal(await page.getByRole("button", { name: "Aprobar", exact: true }).count(), 0);
+      assert.equal(
+        await page.getByRole("button", { name: "Habilitar publicación", exact: true }).count(),
+        0,
+      );
       checks++;
       isAdmin = true;
       await page.getByRole("button", { name: "Reintentar", exact: true }).click();
       await page.getByRole("heading", { name: "Pastelería de prueba", exact: true }).waitFor();
       await page.screenshot({ path: `/tmp/jama-review-${width}.png`, fullPage: true });
-      await page.getByRole("button", { name: "Aprobar", exact: true }).click();
+      await page.getByRole("button", { name: "Suspender", exact: true }).click();
+      await page.getByText("Revisión guardada.").waitFor();
+      assert.equal(business.status, "pending");
+      await page.getByRole("button", { name: "Habilitar publicación", exact: true }).click();
       await page.getByText("Revisión guardada.").waitFor();
       assert.equal(business.status, "approved");
       assert.equal(
@@ -314,14 +321,13 @@ const picture = fs.readFileSync(
       checks++;
       await page.screenshot({ path: `/tmp/jama-approval-${width}.png`, fullPage: true });
       await page.goto(base + "/vender");
-      await page.getByText("Negocio aprobado", { exact: true }).waitFor();
-      await page.getByRole("button", { name: "Reactivar", exact: true }).click();
+      await page.getByText("Publicación habilitada", { exact: true }).waitFor();
       await page.getByText("Activa", { exact: true }).waitFor();
       checks++;
       await page.getByRole("button", { name: "Pausar", exact: true }).click();
       await page.getByText("Pausada", { exact: true }).waitFor();
       checks++;
-      await page.getByRole("button", { name: "Reactivar", exact: true }).click();
+      await page.getByRole("button", { name: "Publicar", exact: true }).click();
       await page.getByText("Activa", { exact: true }).waitFor();
       checks++;
       await page.goto(base + "/explorar");

@@ -237,7 +237,7 @@ export const saveOffer = createServerFn({ method: "POST" })
         );
       if (data.published && business.status !== "approved")
         throw new OfferError(
-          "Tu negocio debe ser aprobado antes de publicar. Puedes guardar un borrador.",
+          "La publicación del negocio está suspendida. Puedes guardar un borrador.",
           "validation",
         );
       const { data: category, error: categoryError } = await client
@@ -327,7 +327,7 @@ export const changeOffer = createServerFn({ method: "POST" })
         .maybeSingle();
       if (!business) throw new OfferError("No pudimos encontrar tu negocio.");
       if (data.action === "activate" && business.status !== "approved")
-        throw new OfferError("Tu negocio debe ser aprobado antes de publicar.", "validation");
+        throw new OfferError("La publicación del negocio está suspendida.", "validation");
       const { data: offer, error } = await client
         .from("products")
         .select("id, image_path, ends_at, stock")

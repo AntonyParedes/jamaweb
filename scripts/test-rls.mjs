@@ -742,8 +742,112 @@ try {
     );
     checks++;
   }
+  // Upgrade the previous approval model without deleting or publishing drafts.
+  await asUser(userA);
+  await db.query("select public.jama_review_business($1, 'rejected', 'Bloqueado')", [businessA]);
+  await db.exec("reset role");
+  await db.query("select set_config('request.jwt.claim.sub', '', false)");
+  await db.query(
+    "update public.products set published = false where business_id = $1 and id <> $2",
+    [businessB, offerB],
+  );
+  const beforeDirect = (await db.query("select id, published from public.products order by id"))
+    .rows;
+  await db.exec(
+    await readFile(
+      new URL("../supabase/migrations/202610110004_jama_direct_publication.sql", import.meta.url),
+      "utf8",
+    ),
+  );
+  assert.deepEqual(
+    (await db.query("select id, published from public.products order by id")).rows,
+    beforeDirect,
+  );
+  checks++;
+  assert.equal(
+    (await db.query("select status from public.businesses where id = $1", [businessB])).rows[0]
+      .status,
+    "approved",
+  );
+  assert.equal(
+    (await db.query("select status from public.businesses where id = $1", [businessA])).rows[0]
+      .status,
+    "rejected",
+  );
+  checks += 2;
+  await db.exec("set role anon");
+  assert.ok((await catalog()).items.some((p) => p.id === offerB));
+  checks++;
+  await asUser(userB);
+  await db.query(
+    "update public.businesses set name = 'Negocio editado', whatsapp = '51987654321' where id = $1",
+    [businessB],
+  );
+  assert.equal(
+    (await db.query("select status from public.businesses where id = $1", [businessB])).rows[0]
+      .status,
+    "approved",
+  );
+  assert.equal((await contact(offerB)).whatsapp, "51987654321");
+  checks += 2;
+  await db.query("update public.products set published = false where id = $1", [offerB]);
+  assert.equal((await catalog()).items.length, 0);
+  await db.query("update public.products set published = true where id = $1", [offerB]);
+  assert.ok((await catalog()).items.some((p) => p.id === offerB));
+  checks += 2;
+  await asUser(userA);
+  await db.query("update public.businesses set name = 'Negocio bloqueado editado' where id = $1", [
+    businessA,
+  ]);
+  assert.equal(
+    (await db.query("select status from public.businesses where id = $1", [businessA])).rows[0]
+      .status,
+    "rejected",
+  );
+  checks++;
+  const userC = "00000000-0000-4000-8000-000000000003";
+  await db.exec("reset role");
+  await db.query("insert into auth.users (id) values ($1)", [userC]);
+  await asUser(userC);
+  const directBusiness = (
+    await db.query(
+      "insert into public.businesses (owner_id, name, zone, whatsapp, category) values ($1, 'Negocio directo', 'Centro', '51912345678', 'cafeteria') returning id, status",
+      [userC],
+    )
+  ).rows[0];
+  assert.equal(directBusiness.status, "approved");
+  checks++;
+  const directOffer = "00000000-0000-4000-8000-000000000033";
+  const directPath = `${userC}/${directOffer}/00000000-0000-4000-8000-000000000099.jpg`;
+  await db.query(
+    "insert into storage.objects (bucket_id, name, metadata) values ('offer-images', $1, $2)",
+    [directPath, { mimetype: "image/jpeg", size: 1000 }],
+  );
+  await insertOffer(directOffer, directBusiness.id, directPath);
+  await db.exec("reset role; set role anon");
+  assert.ok((await catalog()).items.some((p) => p.id === directOffer));
+  checks++;
+  await asUser(userC);
+  await assert.rejects(
+    db.query("update public.businesses set status = 'approved' where id = $1", [directBusiness.id]),
+    /permission denied/,
+  );
+  await assert.rejects(
+    db.query("select public.jama_review_business($1, 'approved', '')", [businessA]),
+    /Administrator required/,
+  );
+  assert.equal(
+    (await db.query("select id from public.products where id = $1", [offerB])).rows.length,
+    1,
+  );
+  assert.equal(
+    (await db.query("update public.products set stock = 10 where id = $1 returning id", [offerB]))
+      .rows.length,
+    0,
+  );
+  checks += 4;
   console.log(
-    `${checks} PostgreSQL checks passed: profiles, seller isolation, image policies, safe migration, admin-only approval, extensible categories, exact discount order, active public catalog, WhatsApp authorization, expiry, server prices and stock. Storage HTTP/bytes and hosted Auth are not simulated by PostgreSQL.`,
+    `${checks} PostgreSQL checks passed: profiles, seller isolation, image policies, safe migration, direct publication, preserved drafts, administrator-only suspension, extensible categories, exact discount order, active public catalog, WhatsApp authorization, expiry, server prices and stock. Storage HTTP/bytes and hosted Auth are not simulated by PostgreSQL.`,
   );
 } catch (error) {
   console.error(`${error.name}: ${error.message}${error.query ? `\nQuery: ${error.query}` : ""}`);

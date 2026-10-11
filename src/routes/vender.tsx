@@ -141,7 +141,7 @@ export function Vender() {
       toast.success(
         result.value.status === "approved"
           ? "Negocio guardado"
-          : "Solicitud guardada. Revisaremos tu negocio antes de publicar.",
+          : "Negocio guardado. La publicación no está habilitada.",
       );
     } catch {
       setError("No pudimos guardar tu negocio. Inténtalo nuevamente.");
@@ -300,8 +300,8 @@ export function Vender() {
                     {pending ? "Guardando…" : "Guardar negocio"}
                   </button>
                   <p className="text-xs text-muted-foreground">
-                    Revisaremos si tu negocio es compatible con las ofertas de cierre. Cambiar sus
-                    datos lo enviará nuevamente a revisión.
+                    Publica directamente con una categoría válida y un WhatsApp obligatorio. No
+                    necesitas aprobación previa.
                   </p>
                   {business && (
                     <button
@@ -325,15 +325,15 @@ export function Vender() {
                 <div role="status" className="rounded-xl bg-muted p-3 text-sm">
                   <p className="font-bold">
                     {business.status === "approved"
-                      ? "Negocio aprobado"
+                      ? "Publicación habilitada"
                       : business.status === "rejected"
-                        ? "Solicitud no aprobada"
-                        : "Solicitud en revisión"}
+                        ? "Publicación bloqueada"
+                        : "Publicación suspendida"}
                   </p>
                   {business.status !== "approved" && (
                     <p>
-                      Puedes preparar borradores. Tus ofertas estarán ocultas hasta que un
-                      administrador apruebe el negocio.
+                      Puedes guardar borradores. La publicación de este negocio está suspendida;
+                      revisa la observación o contacta a JAMA.
                     </p>
                   )}
                   {business.review_note && (
@@ -389,7 +389,7 @@ export function Vender() {
                       toast.success(
                         business.status === "approved"
                           ? "Oferta guardada. Se mostrará durante su vigencia si está publicada."
-                          : "Borrador guardado. Necesitas la aprobación del negocio para publicar.",
+                          : "Borrador guardado. La publicación del negocio está suspendida.",
                       );
                     }}
                   />
@@ -399,6 +399,10 @@ export function Vender() {
                     Aún no tienes ofertas. Publica tu primer producto.
                   </p>
                 )}
+                <p className="text-sm text-muted-foreground">
+                  Para mostrar una oferta guardada como borrador o pausada, pulsa Publicar. Si está
+                  vencida o agotada, edita su horario o stock antes de publicarla.
+                </p>
                 <ul className="space-y-4">
                   {offers.map((offer) => {
                     const status = offerStatus(offer, clock.server + elapsed);
@@ -418,7 +422,7 @@ export function Vender() {
                             <h3 className="break-words font-extrabold">{offer.name}</h3>
                             <span className="mt-1 inline-block rounded-full bg-muted px-2 py-1 text-xs font-bold">
                               {business.status !== "approved" && offer.published
-                                ? "Oculta: negocio no aprobado"
+                                ? "Oculta: negocio suspendido"
                                 : status}
                             </span>
                             <p className="mt-1 text-sm">
@@ -451,7 +455,7 @@ export function Vender() {
                             }
                             className="min-h-11 rounded-full border px-4 text-sm font-bold disabled:opacity-50"
                           >
-                            {offer.published ? "Pausar" : "Reactivar"}
+                            {offer.published ? "Pausar" : "Publicar"}
                           </button>
                           <button
                             disabled={pending}
