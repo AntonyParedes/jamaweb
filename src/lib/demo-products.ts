@@ -52,6 +52,15 @@ function photoTile(index: number): NonNullable<Product["imageTile"]> {
     sheetHeight: 1122,
   };
 }
+const demoBrands: Record<string, string> = {
+  restaurantes: "Sazón",
+  tortas: "Dulce",
+  postres: "Ñam",
+  panaderia: "Miga",
+  cafeteria: "Taza",
+  alimentos: "Verde",
+};
+
 export const demoProducts: Product[] = examples.map(
   ([name, category, price, originalPrice, description], index) => ({
     id: `demo-${index + 1}`,
@@ -60,7 +69,8 @@ export const demoProducts: Product[] = examples.map(
     price,
     originalPrice,
     description,
-    store: "Local de demostración",
+    store: demoBrands[category] ?? "Jama",
+    demoBrand: demoBrands[category] ?? "Jama",
     zone: "Sin dirección comercial",
     image: photoSheet,
     imageTile: photoTile(index),

@@ -17,8 +17,10 @@ describe("discountPercent", () => {
   });
   it("keeps fractional discounts exact for sorting, without inflating the badge", () => {
     expect(discountPercent(2, 3)).toBeCloseTo(100 / 3);
-    expect(discountLabel(2, 3)).toBe("33.33");
+    expect(discountLabel(2, 3)).toBe("33");
     expect(discountLabel(12, 20)).toBe("40");
+    expect(discountLabel(1, 3)).toBe("66");
+    expect(discountLabel(10, 18)).toBe("44");
   });
 });
 

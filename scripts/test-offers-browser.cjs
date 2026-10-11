@@ -211,7 +211,22 @@ const picture = fs.readFileSync(
       });
       await page.goto(base + "/explorar");
       await page.waitForLoadState("networkidle");
-      await page.getByText("20 ejemplos", { exact: true }).waitFor();
+      await page.getByRole("heading", { name: "Ejemplos de ofertas", exact: true }).waitFor();
+      assert.equal(await page.getByText("20 ejemplos", { exact: true }).count(), 0);
+      const exampleTrack = page.getByLabel("Explorar ejemplos de ofertas", { exact: true });
+      assert.ok(await exampleTrack.evaluate((el) => el.scrollWidth > el.clientWidth));
+      const firstPosition = await exampleTrack.evaluate((el) => el.scrollLeft);
+      await page.getByRole("button", { name: "Ejemplos siguientes", exact: true }).click();
+      await page.waitForFunction(
+        () => document.querySelector('[aria-label="Explorar ejemplos de ofertas"]').scrollLeft > 0,
+      );
+      assert.ok((await exampleTrack.evaluate((el) => el.scrollLeft)) > firstPosition);
+      await exampleTrack.evaluate((el) => (el.scrollLeft = 0));
+      assert.equal(
+        await page.getByRole("img", { name: "Logo provisional de Sazón", exact: true }).count(),
+        5,
+      );
+      assert.ok((await page.locator("article").first().textContent()).includes("-44%"));
       assert.equal(await page.locator("article").count(), 20);
       await page
         .locator("article img")
@@ -229,11 +244,12 @@ const picture = fs.readFileSync(
       await page.getByRole("button", { name: "Cerrar ejemplo" }).click();
       checks++;
       await page.getByPlaceholder("Busca productos, platos, locales…").fill("brownies");
-      await page.getByText("1 ejemplo", { exact: true }).waitFor();
+      await page.getByRole("button", { name: "Ver Brownies", exact: true }).waitFor();
       assert.equal(await page.locator("article").count(), 1);
       await page.getByPlaceholder("Busca productos, platos, locales…").fill("");
       await page.getByRole("button", { name: /Tortas$/ }).click();
-      await page.getByText("4 ejemplos", { exact: true }).waitFor();
+      await page.getByRole("button", { name: "Ver Torta de chocolate", exact: true }).waitFor();
+      assert.equal(await page.locator("article").count(), 4);
       await page.getByRole("button", { name: "✨ Todo", exact: true }).click();
       checks++;
       await page.screenshot({ path: `/tmp/jama-examples-${width}.png`, fullPage: true });
@@ -433,6 +449,14 @@ const picture = fs.readFileSync(
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
         true,
       );
+      const hero = await page
+        .getByAltText("JAMA: reserva una porción de torta de chocolate a S/ 15 desde tu celular")
+        .evaluate((el) => ({
+          width: el.getBoundingClientRect().width,
+          fit: getComputedStyle(el).objectFit,
+        }));
+      assert.equal(hero.fit, "contain");
+      if (width < 640) assert.ok(hero.width >= width - 2);
       checks++;
       await page.screenshot({ path: `/tmp/jama-discounts-${width}.png`, fullPage: true });
       await page

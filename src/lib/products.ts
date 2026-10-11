@@ -23,6 +23,7 @@ export type Product = {
   endsAt: string;
   stock: number;
   demo?: boolean;
+  demoBrand?: string;
   imageTile?: {
     left: number;
     top: number;
@@ -41,10 +42,10 @@ export function discountPercent(price: number, original: number): number {
   return ((originalCents - priceCents) / originalCents) * 100;
 }
 
-// Display up to two decimals without inflating the advertised percentage.
+// Show whole percentages without inflating the advertised discount.
 export function discountLabel(price: number, original: number): string {
-  return new Intl.NumberFormat("es-PE", { maximumFractionDigits: 2 }).format(
-    Math.floor((discountPercent(price, original) + 1e-10) * 100) / 100,
+  return new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 }).format(
+    Math.floor(discountPercent(price, original) + 1e-10),
   );
 }
 

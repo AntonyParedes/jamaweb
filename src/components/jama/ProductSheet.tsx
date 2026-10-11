@@ -7,6 +7,7 @@ import { discountLabel, type Product } from "@/lib/products";
 import { addToCart } from "@/lib/cart";
 import { formatOfferTime } from "@/lib/offers";
 import { ProductPhoto } from "./ProductPhoto";
+import { DemoBrandLogo } from "./DemoBrandLogo";
 
 export function ProductSheet({
   product,
@@ -35,7 +36,10 @@ export function ProductSheet({
               Ejemplo de demostración con foto ilustrativa. No está disponible para comprar, agregar
               al carrito ni contactar a un vendedor.
             </DrawerDescription>
-            <p className="mt-3">{product.description}</p>
+            <div className="mt-3 flex items-center gap-3">
+              <p className="min-w-0 flex-1">{product.description}</p>
+              {product.demoBrand && <DemoBrandLogo name={product.demoBrand} />}
+            </div>
             <p className="mt-3 font-black">
               Precio de ejemplo: S/ {product.price.toFixed(2)}{" "}
               <span className="ml-2 font-normal line-through">

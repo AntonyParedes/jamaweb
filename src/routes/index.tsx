@@ -96,7 +96,7 @@ function Home() {
           width={1254}
           height={1254}
           fetchPriority="high"
-          className="order-1 mx-auto aspect-square w-full max-w-64 object-contain sm:max-w-md md:order-2 md:max-w-none"
+          className="order-1 -mx-4 aspect-square w-[calc(100%+2rem)] max-w-none object-contain sm:mx-auto sm:w-full sm:max-w-md md:order-2 md:max-w-none"
         />
       </section>
 

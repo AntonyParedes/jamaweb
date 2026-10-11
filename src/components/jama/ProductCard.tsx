@@ -4,6 +4,7 @@ import { discountLabel, type Product } from "@/lib/products";
 import { toggleFavorite, useJama } from "@/lib/store";
 import { formatOfferTime } from "@/lib/offers";
 import { ProductPhoto } from "./ProductPhoto";
+import { DemoBrandLogo } from "./DemoBrandLogo";
 
 export function ProductCard({
   product,
@@ -41,6 +42,14 @@ export function ProductCard({
             </span>
           </div>
           <p className="truncate text-xs font-bold">{product.store}</p>
+          {product.demoBrand && (
+            <div className="flex items-center gap-2">
+              <p className="line-clamp-2 min-w-0 flex-1 text-xs text-muted-foreground">
+                {product.description}
+              </p>
+              <DemoBrandLogo name={product.demoBrand} />
+            </div>
+          )}
           {product.demo ? (
             <p className="text-xs font-bold text-muted-foreground">Ejemplo · foto ilustrativa</p>
           ) : (

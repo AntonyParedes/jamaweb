@@ -126,7 +126,7 @@ Permitir el host del proyecto Supabase en la red del entorno de desarrollo.
   redondear antes de comparar. Desempata por `ends_at` ascendente y después por ID.
   El cliente compara céntimos exactamente con `BigInt`, recalcula al recibir precios
   nuevos y mantiene el detalle abierto sincronizado con el catálogo. El porcentaje
-  mostrado tiene hasta dos decimales, truncados para no exagerar el descuento.
+  mostrado es un número entero, truncado para no exagerar el descuento.
 - `/vender` requiere sesión verificada. El negocio incluye nombre, zona y WhatsApp
   comercial obligatorio. Perú usa +51 como valor inicial; se permiten otros códigos.
   La validación comprueba formato, no que el número realmente tenga WhatsApp activo.
