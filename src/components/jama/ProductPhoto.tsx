@@ -12,10 +12,10 @@ export function ProductPhoto({ product }: { product: Product }) {
         style={
           product.imageTile
             ? {
-                width: "500%",
-                height: "400%",
-                left: `${-100 * product.imageTile.column}%`,
-                top: `${-100 * product.imageTile.row}%`,
+                width: `${(100 * product.imageTile.sheetWidth) / product.imageTile.width}%`,
+                height: `${(100 * product.imageTile.sheetHeight) / product.imageTile.height}%`,
+                left: `${(-100 * product.imageTile.left) / product.imageTile.width}%`,
+                top: `${(-100 * product.imageTile.top) / product.imageTile.height}%`,
               }
             : undefined
         }

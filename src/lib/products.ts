@@ -23,7 +23,14 @@ export type Product = {
   endsAt: string;
   stock: number;
   demo?: boolean;
-  imageTile?: { column: number; row: number };
+  imageTile?: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    sheetWidth: number;
+    sheetHeight: number;
+  };
 };
 
 export function discountPercent(price: number, original: number): number {

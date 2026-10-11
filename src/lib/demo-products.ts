@@ -25,6 +25,33 @@ const examples: [string, string, number, number, string][] = [
   ["Ensalada de frutas", "alimentos", 6, 10, "Una mezcla de frutas de temporada."],
 ];
 
+// The generated sheet has unequal row heights; use its actual photo boundaries.
+const columns: [number, number][] = [
+  [0, 281],
+  [285, 560],
+  [564, 839],
+  [843, 1119],
+  [1123, 1402],
+];
+const rows: [number, number][] = [
+  [0, 274],
+  [277, 542],
+  [545, 812],
+  [815, 1122],
+];
+function photoTile(index: number): NonNullable<Product["imageTile"]> {
+  const column = columns[index % 5];
+  const row = rows[Math.floor(index / 5)];
+  if (!column || !row) throw new Error("Missing example photo bounds");
+  return {
+    left: column[0],
+    top: row[0],
+    width: column[1] - column[0],
+    height: row[1] - row[0],
+    sheetWidth: 1402,
+    sheetHeight: 1122,
+  };
+}
 export const demoProducts: Product[] = examples.map(
   ([name, category, price, originalPrice, description], index) => ({
     id: `demo-${index + 1}`,
@@ -36,7 +63,7 @@ export const demoProducts: Product[] = examples.map(
     store: "Local de demostración",
     zone: "Sin dirección comercial",
     image: photoSheet,
-    imageTile: { column: index % 5, row: Math.floor(index / 5) },
+    imageTile: photoTile(index),
     demo: true,
     stock: 0,
     startsAt: "",
