@@ -16,6 +16,7 @@ import { CatalogNotice } from "@/components/jama/CatalogNotice";
 import { useCatalog } from "@/lib/catalog";
 import { ProductGrid } from "@/components/jama/ProductCard";
 import { ProductSheet } from "@/components/jama/ProductSheet";
+import { DemoCatalog } from "@/components/jama/DemoCatalog";
 import {
   Accordion,
   AccordionContent,
@@ -127,11 +128,13 @@ function Home() {
         </div>
         <CatalogNotice loading={catalogLoading} error={catalogError} retry={refresh} />
         {!catalogLoading && !catalogError && !products.length && (
-          <p className="py-6 text-muted-foreground">
-            Pronto habrá nuevas ofertas. ¿Tienes un negocio? Solicita publicar.
-          </p>
+          <p className="py-4 text-muted-foreground">Pronto habrá nuevas ofertas reales.</p>
         )}
         <ProductGrid products={products.slice(0, 4)} onOpen={setOpen} />
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pt-8" aria-label="Catálogo de demostración">
+        <DemoCatalog />
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pt-12">

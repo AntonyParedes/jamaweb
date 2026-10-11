@@ -211,7 +211,32 @@ const picture = fs.readFileSync(
       });
       await page.goto(base + "/explorar");
       await page.waitForLoadState("networkidle");
-      await page.getByText("Sin resultados").waitFor();
+      await page.getByText("20 ejemplos", { exact: true }).waitFor();
+      assert.equal(await page.locator("article").count(), 20);
+      await page
+        .locator("article img")
+        .first()
+        .evaluate((image) => image.decode());
+      checks++;
+      await page.getByRole("button", { name: "Ver Arroz con pollo", exact: true }).click();
+      const demoDialog = page.getByRole("dialog");
+      await demoDialog
+        .getByText("Ejemplo de demostración con foto ilustrativa.", { exact: false })
+        .waitFor();
+      assert.equal(await demoDialog.getByText("Quiero este descuento", { exact: true }).count(), 0);
+      assert.equal(await demoDialog.getByRole("button", { name: /Agregar al carrito/ }).count(), 0);
+      assert.equal(calls.contactOffer || 0, 0);
+      await page.getByRole("button", { name: "Cerrar ejemplo" }).click();
+      checks++;
+      await page.getByPlaceholder("Busca productos, platos, locales…").fill("brownies");
+      await page.getByText("1 ejemplo", { exact: true }).waitFor();
+      assert.equal(await page.locator("article").count(), 1);
+      await page.getByPlaceholder("Busca productos, platos, locales…").fill("");
+      await page.getByRole("button", { name: /Tortas$/ }).click();
+      await page.getByText("4 ejemplos", { exact: true }).waitFor();
+      await page.getByRole("button", { name: "✨ Todo", exact: true }).click();
+      checks++;
+      await page.screenshot({ path: `/tmp/jama-examples-${width}.png`, fullPage: true });
       checks++;
       await page.getByRole("link", { name: "Publicar una oferta", exact: true }).click();
       await page.waitForURL("**/acceso?**");
@@ -296,6 +321,10 @@ const picture = fs.readFileSync(
       checks++;
       await page.goto(base + "/explorar");
       await page.getByRole("button", { name: "Ver Torta de prueba", exact: true }).waitFor();
+      assert.equal(
+        await page.getByRole("heading", { name: "Ejemplos de ofertas", exact: true }).count(),
+        1,
+      );
       checks++;
       await page.goto(base + "/administracion");
       await page.getByRole("alert").filter({ hasText: "No tienes permisos" }).waitFor();
@@ -383,13 +412,23 @@ const picture = fs.readFileSync(
         .getByRole("heading", { name: "La Jama de hoy, al precio de siempre", exact: true })
         .waitFor();
       await page.getByRole("button", { name: "Ver Mayor descuento", exact: true }).waitFor();
-      assert.deepEqual(await page.locator("article h3").allTextContents(), [
-        "Mayor descuento",
-        "Cierra antes",
-        "Cierra después",
-        "Torta de prueba",
-      ]);
-      assert.ok((await page.locator("article").first().textContent()).includes("-75%"));
+      assert.deepEqual(
+        await page
+          .locator("article")
+          .filter({ hasNotText: "Ejemplo · foto ilustrativa" })
+          .locator("h3")
+          .allTextContents(),
+        ["Mayor descuento", "Cierra antes", "Cierra después", "Torta de prueba"],
+      );
+      assert.ok(
+        (
+          await page
+            .locator("article")
+            .filter({ hasNotText: "Ejemplo · foto ilustrativa" })
+            .first()
+            .textContent()
+        ).includes("-75%"),
+      );
       assert.equal(
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
         true,
@@ -422,7 +461,16 @@ const picture = fs.readFileSync(
         .getByRole("dialog")
         .getByRole("button", { name: "Agregar al carrito · S/ 8.00", exact: true })
         .waitFor();
-      assert.equal((await page.locator("article h3").allTextContents())[0], "Torta de prueba");
+      assert.equal(
+        (
+          await page
+            .locator("article")
+            .filter({ hasNotText: "Ejemplo · foto ilustrativa" })
+            .locator("h3")
+            .allTextContents()
+        )[0],
+        "Torta de prueba",
+      );
       checks++;
       offers = [saved];
       await page.goto(base + "/vender");

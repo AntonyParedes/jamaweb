@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { discountLabel, type Product } from "@/lib/products";
 import { toggleFavorite, useJama } from "@/lib/store";
 import { formatOfferTime } from "@/lib/offers";
+import { ProductPhoto } from "./ProductPhoto";
 
 export function ProductCard({
   product,
@@ -24,15 +25,7 @@ export function ProductCard({
         aria-label={`Ver ${product.name}`}
       >
         <div className="relative aspect-square bg-muted">
-          <img
-            src={product.image}
-            alt={product.name}
-            loading="lazy"
-            decoding="async"
-            width={816}
-            height={816}
-            className="h-full w-full object-cover"
-          />
+          <ProductPhoto product={product} />
           <span className="absolute left-2 top-2 rounded-full bg-lime px-2 py-1 text-xs font-black text-lime-foreground">
             -{pct}%
           </span>
@@ -48,27 +41,35 @@ export function ProductCard({
             </span>
           </div>
           <p className="truncate text-xs font-bold">{product.store}</p>
-          <p className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Clock3 className="size-3.5 shrink-0" />
-            <span className="truncate">Hasta {formatOfferTime(product.endsAt)}</span>
-          </p>
-          <p className="text-xs text-muted-foreground">{product.stock} disponibles</p>
+          {product.demo ? (
+            <p className="text-xs font-bold text-muted-foreground">Ejemplo · foto ilustrativa</p>
+          ) : (
+            <>
+              <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock3 className="size-3.5 shrink-0" />
+                <span className="truncate">Hasta {formatOfferTime(product.endsAt)}</span>
+              </p>
+              <p className="text-xs text-muted-foreground">{product.stock} disponibles</p>
+            </>
+          )}
         </div>
       </button>
-      <button
-        type="button"
-        onClick={() => {
-          const added = toggleFavorite(product.id);
-          toast(added ? "Guardado en favoritos" : "Quitado de favoritos");
-        }}
-        aria-label={fav ? "Quitar de favoritos" : "Agregar a favoritos"}
-        aria-pressed={fav}
-        className="press absolute right-1 top-1 grid size-11 place-items-center"
-      >
-        <span className="grid size-9 place-items-center rounded-full bg-card/90 shadow-soft">
-          <Heart className={`size-4 ${fav ? "fill-destructive text-destructive" : ""}`} />
-        </span>
-      </button>
+      {!product.demo && (
+        <button
+          type="button"
+          onClick={() => {
+            const added = toggleFavorite(product.id);
+            toast(added ? "Guardado en favoritos" : "Quitado de favoritos");
+          }}
+          aria-label={fav ? "Quitar de favoritos" : "Agregar a favoritos"}
+          aria-pressed={fav}
+          className="press absolute right-1 top-1 grid size-11 place-items-center"
+        >
+          <span className="grid size-9 place-items-center rounded-full bg-card/90 shadow-soft">
+            <Heart className={`size-4 ${fav ? "fill-destructive text-destructive" : ""}`} />
+          </span>
+        </button>
+      )}
     </article>
   );
 }

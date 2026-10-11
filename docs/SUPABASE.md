@@ -215,7 +215,7 @@ catálogo, pausa/reactivación/eliminación y retorno desde login a 320, 375, 76
 no crea cuentas reales, publica productos remotos ni envía mensajes.
 
 Resultados locales de esta implementación: 51 pruebas de aplicación, 148
-comprobaciones de PostgreSQL y 120 comprobaciones de Chromium correctas. Chromium
+comprobaciones de PostgreSQL y 132 comprobaciones de Chromium correctas. Chromium
 comprueba formularios dinámicos, borradores, aprobación, catálogo, orden y
 actualización de precios en móvil/escritorio con respuestas simuladas; TypeScript
 y build de Vercel correctos. El usuario aplicó la segunda migración al proyecto

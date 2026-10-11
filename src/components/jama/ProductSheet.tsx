@@ -6,6 +6,7 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/compone
 import { discountLabel, type Product } from "@/lib/products";
 import { addToCart } from "@/lib/cart";
 import { formatOfferTime } from "@/lib/offers";
+import { ProductPhoto } from "./ProductPhoto";
 
 export function ProductSheet({
   product,
@@ -23,6 +24,36 @@ export function ProductSheet({
   }, [product?.stock]);
   if (!product) return null;
   const pct = discountLabel(product.price, product.originalPrice);
+  if (product.demo)
+    return (
+      <Drawer open onOpenChange={(open) => !open && onClose()}>
+        <DrawerContent className="mx-auto max-h-[92dvh] max-w-lg">
+          <div className="overflow-y-auto px-4 pb-6">
+            <ProductPhoto product={product} />
+            <DrawerTitle className="mt-4 text-xl font-black">{product.name}</DrawerTitle>
+            <DrawerDescription className="mt-2 rounded-xl bg-muted p-3">
+              Ejemplo de demostración con foto ilustrativa. No está disponible para comprar, agregar
+              al carrito ni contactar a un vendedor.
+            </DrawerDescription>
+            <p className="mt-3">{product.description}</p>
+            <p className="mt-3 font-black">
+              Precio de ejemplo: S/ {product.price.toFixed(2)}{" "}
+              <span className="ml-2 font-normal line-through">
+                S/ {product.originalPrice.toFixed(2)}
+              </span>{" "}
+              · -{pct}%
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-4 min-h-12 w-full rounded-full bg-lime font-black"
+            >
+              Cerrar ejemplo
+            </button>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
   return (
     <Drawer open={!!product} onOpenChange={(open) => !open && onClose()} repositionInputs>
       <DrawerContent className="mx-auto max-h-[92dvh] max-w-lg">

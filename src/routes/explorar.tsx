@@ -6,6 +6,7 @@ import { CatalogNotice } from "@/components/jama/CatalogNotice";
 import { useCatalog } from "@/lib/catalog";
 import { ProductGrid } from "@/components/jama/ProductCard";
 import { ProductSheet } from "@/components/jama/ProductSheet";
+import { DemoCatalog } from "@/components/jama/DemoCatalog";
 import { type Category, type Product } from "@/lib/products";
 import { useCategories } from "@/lib/categories";
 
@@ -84,15 +85,22 @@ function Explorar() {
             {categoryError}
           </p>
         )}
-        <p className="mb-3 text-sm text-muted-foreground">{list.length} ofertas hoy</p>
+        {products.length > 0 && (
+          <p className="mb-3 text-sm text-muted-foreground">{list.length} ofertas hoy</p>
+        )}
         {catalogLoading || catalogError ? null : list.length ? (
           <ProductGrid products={list} onOpen={setOpen} />
         ) : (
-          <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
+          <div className="flex flex-col items-center gap-2 py-6 text-muted-foreground">
             <SearchX className="size-10" />
-            <p className="font-bold">Sin resultados</p>
+            <p className="font-bold">
+              {products.length ? "Sin resultados" : "Pronto habrá ofertas reales disponibles"}
+            </p>
           </div>
         )}
+        <div className="mt-8">
+          <DemoCatalog search={q} category={cat} />
+        </div>
       </section>
       <ProductSheet
         product={products.find((p) => p.id === open?.id) ?? null}
