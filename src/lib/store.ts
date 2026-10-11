@@ -60,14 +60,21 @@ export function useJama() {
 export function toggleFavorite(id: string) {
   load();
   const has = state.favorites.includes(id);
-  set({ ...state, favorites: has ? state.favorites.filter((f) => f !== id) : [...state.favorites, id] });
+  set({
+    ...state,
+    favorites: has ? state.favorites.filter((f) => f !== id) : [...state.favorites, id],
+  });
   return !has;
 }
 
 export function addReservation(r: Omit<Reservation, "id" | "createdAt">) {
   load();
   const res: Reservation = { ...r, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
-  set({ ...state, reservations: [res, ...state.reservations], profile: { name: r.name, phone: r.phone } });
+  set({
+    ...state,
+    reservations: [res, ...state.reservations],
+    profile: { name: r.name, phone: r.phone },
+  });
   return res;
 }
 

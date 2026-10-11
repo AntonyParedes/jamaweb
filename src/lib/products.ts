@@ -1,18 +1,13 @@
-import heroAsset from "@/assets/jama-hero.webp.asset.json";
-import tresLeches from "@/assets/p-tresleches.jpg";
-import pan from "@/assets/p-pan.jpg";
-import cupcakes from "@/assets/p-cupcakes.jpg";
-import alfajores from "@/assets/p-alfajores.jpg";
-
-export type Category = "tortas" | "panaderia" | "postres" | "otros";
-
-export const CATEGORIES: { id: Category | "todos"; label: string; emoji: string }[] = [
-  { id: "todos", label: "Todo", emoji: "✨" },
-  { id: "tortas", label: "Tortas", emoji: "🍰" },
-  { id: "panaderia", label: "Panadería", emoji: "🥐" },
-  { id: "postres", label: "Postres", emoji: "🧁" },
-  { id: "otros", label: "Otros", emoji: "🍪" },
-];
+export type Category = string;
+export type CategoryDefinition = {
+  id: Category;
+  label: string;
+  emoji: string;
+  businessEnabled: boolean;
+  offerEnabled: boolean;
+  nameLabel: string;
+  descriptionHint: string;
+};
 
 export type Product = {
   id: string;
@@ -23,84 +18,50 @@ export type Product = {
   image: string;
   price: number;
   originalPrice: number;
-  madeAt: string;
-  pickup: string;
+  description: string;
+  startsAt: string;
+  endsAt: string;
   stock: number;
-  includes?: string;
 };
 
 export function discountPercent(price: number, original: number): number {
-  if (original <= 0 || price >= original) return 0;
-  return Math.round((1 - price / original) * 100);
+  if (!Number.isFinite(price) || !Number.isFinite(original) || price <= 0 || original <= price)
+    return 0;
+  const priceCents = Math.round(price * 100);
+  const originalCents = Math.round(original * 100);
+  return ((originalCents - priceCents) / originalCents) * 100;
 }
 
-export const PRODUCTS: Product[] = [
-  {
-    id: "torta-chocolate",
-    name: "Tajada de torta de chocolate",
-    store: "Pastelería Dulce Hogar",
-    zone: "Huamanga · Centro",
-    category: "tortas",
-    image: heroAsset.url,
-    price: 15,
-    originalPrice: 25,
-    madeAt: "Hoy 8:00 am",
-    pickup: "6:00 – 7:00 pm",
-    stock: 4,
-  },
-  {
-    id: "tres-leches",
-    name: "Tres leches con fresas",
-    store: "Pastelería Lalos",
-    zone: "Huamanga · Fátima",
-    category: "tortas",
-    image: tresLeches,
-    price: 9,
-    originalPrice: 16,
-    madeAt: "Hoy 9:30 am",
-    pickup: "6:30 – 7:30 pm",
-    stock: 6,
-  },
-  {
-    id: "combo-pan",
-    name: "Combo surtido de pan dulce",
-    store: "Panadería San Juan",
-    zone: "Huamanga · La Terraza",
-    category: "panaderia",
-    image: pan,
-    price: 8,
-    originalPrice: 14,
-    madeAt: "Hoy 6:00 am",
-    pickup: "6:00 – 7:00 pm",
-    stock: 3,
-    includes: "2 conchas, 2 croissants, 2 roscas",
-  },
-  {
-    id: "cupcakes",
-    name: "Pack de 3 cupcakes de frutas",
-    store: "Dulce Hogar",
-    zone: "Huamanga · Centro",
-    category: "postres",
-    image: cupcakes,
-    price: 10,
-    originalPrice: 18,
-    madeAt: "Hoy 10:00 am",
-    pickup: "6:00 – 7:00 pm",
-    stock: 5,
-    includes: "Fresa, frambuesa y arándano",
-  },
-  {
-    id: "alfajores",
-    name: "Caja de alfajores y galletas",
-    store: "Panadería San Juan",
-    zone: "Huamanga · La Terraza",
-    category: "otros",
-    image: alfajores,
-    price: 7,
-    originalPrice: 12,
-    madeAt: "Hoy 7:30 am",
-    pickup: "6:30 – 7:30 pm",
-    stock: 8,
-    includes: "6 alfajores + galletas de mantequilla",
-  },
-];
+// Display up to two decimals without inflating the advertised percentage.
+export function discountLabel(price: number, original: number): string {
+  return new Intl.NumberFormat("es-PE", { maximumFractionDigits: 2 }).format(
+    Math.floor((discountPercent(price, original) + 1e-10) * 100) / 100,
+  );
+}
+
+export function availableProducts(products: Product[], serverNow: number): Product[] {
+  return products
+    .filter((p) => {
+      const start = Date.parse(p.startsAt),
+        end = Date.parse(p.endsAt);
+      return (
+        Number.isInteger(p.stock) &&
+        p.stock > 0 &&
+        p.stock <= 100000 &&
+        discountPercent(p.price, p.originalPrice) > 0 &&
+        p.originalPrice <= 1000000 &&
+        start <= serverNow &&
+        end > serverNow &&
+        end > start
+      );
+    })
+    .sort((a, b) => {
+      // Exact cross multiplication in cents: rounded display badges never determine order.
+      const aOriginal = BigInt(Math.round(a.originalPrice * 100));
+      const bOriginal = BigInt(Math.round(b.originalPrice * 100));
+      const left = (aOriginal - BigInt(Math.round(a.price * 100))) * bOriginal;
+      const right = (bOriginal - BigInt(Math.round(b.price * 100))) * aOriginal;
+      if (left !== right) return left > right ? -1 : 1;
+      return Date.parse(a.endsAt) - Date.parse(b.endsAt) || a.id.localeCompare(b.id);
+    });
+}

@@ -1,12 +1,19 @@
 import { Clock3, Heart } from "lucide-react";
 import { toast } from "sonner";
-import { discountPercent, type Product } from "@/lib/products";
+import { discountLabel, type Product } from "@/lib/products";
 import { toggleFavorite, useJama } from "@/lib/store";
+import { formatOfferTime } from "@/lib/offers";
 
-export function ProductCard({ product, onOpen }: { product: Product; onOpen: (p: Product) => void }) {
+export function ProductCard({
+  product,
+  onOpen,
+}: {
+  product: Product;
+  onOpen: (p: Product) => void;
+}) {
   const { favorites } = useJama();
   const fav = favorites.includes(product.id);
-  const pct = discountPercent(product.price, product.originalPrice);
+  const pct = discountLabel(product.price, product.originalPrice);
 
   return (
     <article className="relative overflow-hidden rounded-2xl bg-card shadow-soft">
@@ -21,6 +28,7 @@ export function ProductCard({ product, onOpen }: { product: Product; onOpen: (p:
             src={product.image}
             alt={product.name}
             loading="lazy"
+            decoding="async"
             width={816}
             height={816}
             className="h-full w-full object-cover"
@@ -29,16 +37,22 @@ export function ProductCard({ product, onOpen }: { product: Product; onOpen: (p:
             -{pct}%
           </span>
         </div>
-        <div className="space-y-1 p-3">
-          <h3 className="line-clamp-2 min-h-[2.5em] text-sm font-extrabold leading-tight">{product.name}</h3>
-          <div className="flex items-baseline gap-2">
-            <span className="text-lg font-black">S/ {product.price}</span>
-            <span className="text-xs text-muted-foreground line-through">S/ {product.originalPrice}</span>
+        <div className="space-y-1 p-2.5 sm:p-3">
+          <h3 className="line-clamp-2 min-h-[2.5em] text-sm font-extrabold leading-tight">
+            {product.name}
+          </h3>
+          <div className="flex flex-wrap items-baseline gap-x-1 gap-y-0.5 sm:gap-x-2">
+            <span className="text-base font-black sm:text-lg">S/ {product.price.toFixed(2)}</span>
+            <span className="text-[11px] text-muted-foreground line-through sm:text-xs">
+              S/ {product.originalPrice.toFixed(2)}
+            </span>
           </div>
+          <p className="truncate text-xs font-bold">{product.store}</p>
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock3 className="size-3.5 shrink-0" />
-            <span className="truncate">{product.pickup}</span>
+            <span className="truncate">Hasta {formatOfferTime(product.endsAt)}</span>
           </p>
+          <p className="text-xs text-muted-foreground">{product.stock} disponibles</p>
         </div>
       </button>
       <button
@@ -59,9 +73,15 @@ export function ProductCard({ product, onOpen }: { product: Product; onOpen: (p:
   );
 }
 
-export function ProductGrid({ products, onOpen }: { products: Product[]; onOpen: (p: Product) => void }) {
+export function ProductGrid({
+  products,
+  onOpen,
+}: {
+  products: Product[];
+  onOpen: (p: Product) => void;
+}) {
   return (
-    <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-5">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
       {products.map((p) => (
         <ProductCard key={p.id} product={p} onOpen={onOpen} />
       ))}
